@@ -1,8 +1,10 @@
 scope_to_color_name: {
- doubleQuotedMultiLineString: string,
- singleQuotedMultiLineString: string,
- doubleQuotedString: string,
- singleQuotedString: string,
+ tripleSingleString: string,
+ tripleDoubleString: string,
+ singleDoubleString: string,
+ singleSingleString: string,
+ singleBackString: string,
+
  default: foreground,
  decorator: annotation,
  builtins: annotation,
@@ -10,30 +12,22 @@ scope_to_color_name: {
 scope_definition_rules:
 # Note that the order of the  rules is actually important.
   - {type: EndOfLineRule, scope: singleLineComment, start: '#'}
-  - {type: MultiLineRule, scope: singleQuotedMultiLineString, start: "'''", end: "'''", escapeCharacter: \}
-  - {type: MultiLineRule, scope: doubleQuotedMultiLineString, start: '"""', end: '"""', escapeCharacter: \}
-  - {type: SingleLineRule, scope: doubleQuotedString, sequence: '"', escapeCharacter: \, escapeContinuesLine: true}
-  - {type: SingleLineRule, scope: singleQuotedString, sequence: "'", escapeCharacter: \, escapeContinuesLine: true}
+  - {type: MultiLineRule, scope: tripleSingleString, start: "'''", end: "'''", escapeCharacter: \}
+  - {type: MultiLineRule, scope: tripleDoubleString, start: '"""', end: '"""', escapeCharacter: \}
+  - {type: MultiLineRule, scope: singleDoubleString, start: '"', end: '"', escapeCharacter: \ }
+  - {type: MultiLineRule, scope: singleSingleString, start: "'", end: "'", escapeCharacter: \}
+  - {type: MultiLineRule, scope: singleBackString, start: "`", end: "`", escapeCharacter: \}
+
 scope:
   default:
     bracket: ['(', ')', '[', ']', '{', '}']
 
     operator: [<, '>', '=', +, '-', /, '*', '!', '&', '|', '%', '~', ^, ',']
 
-    #builtins (color name: localVariable)
-    localVariable: [abs, divmod, input, open, staticmethod, all, enumerate, int, ord, str,
-        any, eval, isinstance, pow, sum, basestring, execfile, issubclass, print, super,
-        bin, file, iter, property, tuple, bool, filter, len, range, type,
-        bytearray, float, list, raw_input, unichr, callable, format, locals, reduce, unicode,
-        chr, frozenset, long, reload, vars, classmethod, getattr, map, repr, xrange,
-        cmp, globals, max, reversed, zip, compile, hasattr, memoryview, round, __import__,
-        complex, hash, min, set, apply, delattr, help, next, setattr, buffer,
-        dict, hex, object, slice, coerce, dir, id, oct, sorted, intern
-    ]
+    keyword: [ KEYWORDS ]
 
-    keyword: [and, as, assert, break, class, continue, def, del, elif, else, except, exec, finally,
-      for, from, global, if, import, in, is, lambda, nonlocal, not, or, pass, print,
-      raise, return, self, try, while, with, yield, 'False', None, 'True', image, define, init]
+    #builtins (color name: localVariable)
+    localVariable: [ PROPERTIES ]
 
     #Note: we want to define def and class above regardless of using them again later on.
     #In practice, we'll always match sub-rules before the others, so, if we have a match,
@@ -56,6 +50,42 @@ scope:
         { type: OneOrMoreSpacesRule, scope: default},
         { type: AnyWordRule, scope: method }]
       },
+      {type: CompositeRule, sub_rules: [
+        { type: MatchLineStartRule, scope: default},
+        { type: ZeroOrMoreSpacesRule, scope: default},
+        { type: SequenceRule, scope: keyword, sequence: 'label'},
+        { type: OneOrMoreSpacesRule, scope: default},
+        { type: AnyWordRule, scope: label }]
+      },
+      {type: CompositeRule, sub_rules: [
+        { type: MatchLineStartRule, scope: default},
+        { type: ZeroOrMoreSpacesRule, scope: default},
+        { type: SequenceRule, scope: keyword, sequence: 'menu'},
+        { type: OneOrMoreSpacesRule, scope: default},
+        { type: AnyWordRule, scope: menu }]
+      },
+      {type: CompositeRule, sub_rules: [
+        { type: MatchLineStartRule, scope: default},
+        { type: ZeroOrMoreSpacesRule, scope: default},
+        { type: SequenceRule, scope: keyword, sequence: 'screen'},
+        { type: OneOrMoreSpacesRule, scope: default},
+        { type: AnyWordRule, scope: screen }]
+      },
+      {type: CompositeRule, sub_rules: [
+        { type: MatchLineStartRule, scope: default},
+        { type: ZeroOrMoreSpacesRule, scope: default},
+        { type: SequenceRule, scope: keyword, sequence: 'transform'},
+        { type: OneOrMoreSpacesRule, scope: default},
+        { type: AnyWordRule, scope: transform }]
+      },
+      {type: CompositeRule, sub_rules: [
+        { type: MatchLineStartRule, scope: default},
+        { type: ZeroOrMoreSpacesRule, scope: default},
+        { type: SequenceRule, scope: keyword, sequence: 'define'},
+        { type: OneOrMoreSpacesRule, scope: default},
+        { type: AnyWordRule, scope: define }]
+      },
+
       { type: NumberRule, scope: number},
 
     ]
@@ -64,38 +94,26 @@ file_extensions: [rpy, rpym]
 name: RenPy
 
 outline: #Icons: LiClipseParsedItem.getImage(): class, method, comment, attribute (based on 'define')
-  - {type: Scope, scope: [default, class], define: class} #scope is a list to identify sub-rule
-  - {type: Scope, scope: [default, method], define: method}
-  - {type: Regexp, scope: [singleLineComment], regexp: '#---.*', define: comment, group: 0}
+  - {type: Scope, scope: [default, class], define: class } #scope is a list to identify sub-rule
+  - {type: Scope, scope: [default, method], define: method }
+  - {type: Scope, scope: [default, label], define: label }
+  - {type: Scope, scope: [default, menu], define: menu }
+  - {type: Scope, scope: [default, screen], define: screen }
+  - {type: Scope, scope: [default, transform], define: transform }
+  - {type: Scope, scope: [default, define], define: define }
 
 indent: {
-  type: spaces, #Spaces are used for indenting in Python
-  outline_scopes: [class, method], #Scopes are created where the outline defines a class or method.
-  spaces_for_tabs: true, #Python folks recommend it.
-  tab_width: 4, #Note: optional (default is based on preferences for text editors in the eclipse preferences)
+  type: spaces,
+  outline_scopes: [ class ],
+  spaces_for_tabs: true,
+  tab_width: 4,
 }
 
 auto_edit:
   - {after: ':', trigger: '\n', action: indent, scope: default} #in a new line, indent after ':'
   - {before: ':', trigger: ':', action: skip, scope: default} #skip ':' if already there
-  - {auto_close_scopes: [doubleQuotedString, doubleQuotedString, singleQuotedMultiLineString, doubleQuotedMultiLineString], scope: default} #To work, the scopes must be: SingleLineRule(sequence used for start/end) or MultiLineRule.
+  - {auto_close_scopes: [singleSingleString, singleDoubleString, singleBackString ], scope: default} #To work, the scopes must be: SingleLineRule(sequence used for start/end) or MultiLineRule.
   - {auto_close_parens: ['(', '[', '{'], scope: default} #Will close the parens if it's not properly balanced
   - {auto_skip_parens: [')', ']', '}'], scope: default} #Will skip the close parens if it's properly balanced
 
 comment: {type: singleLine, sequence: '#'}
-
-templates: #Note: pressing ctrl+space twice will show only the templates
-- name: ''
-  description: "Surround with try..except"
-  pattern: |-
-    try:
-    ${indented_block}${cursor}
-    except:
-        raise
-- name: ''
-  description: "Surround with try..finally"
-  pattern: |-
-    try:
-    ${indented_block}${cursor}
-    finally:
-        ${pass}

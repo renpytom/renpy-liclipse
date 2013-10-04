@@ -7,6 +7,9 @@ import keywords
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
+def quote(s):
+    return "'" + s + "'"
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--output", "-o", help="The file to output the result to.")
@@ -23,7 +26,7 @@ def main():
 
         editor = None
 
-        for dn in os.listdir(plugins):
+        for dn in sorted(os.listdir(plugins)):
             if dn.startswith("com.brainwy.liclipse.editor_"):
                 editor = dn
 
@@ -44,6 +47,9 @@ def main():
     # Read in the template file.
     with open(os.path.join(ROOT, "renpy.liclipse"), "r") as f:
         data = f.read()
+
+    data = data.replace("KEYWORDS", ",".join(quote(s) for s in keywords.keywords))
+    data = data.replace("PROPERTIES", ",".join(quote(s) for s in keywords.properties))
 
     # Write the output file.
     print("Writing", output)
