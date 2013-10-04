@@ -45,7 +45,7 @@ def main():
 
 
     # Read in the template file.
-    with open(os.path.join(ROOT, "renpy.liclipse"), "r") as f:
+    with open(os.path.join(ROOT, "renpy.tmpl.liclipse"), "r") as f:
         data = f.read()
 
     data = data.replace("KEYWORDS", ",".join(quote(s) for s in keywords.keywords))
