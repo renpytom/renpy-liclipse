@@ -50,27 +50,19 @@ scope:
         { type: OneOrMoreSpacesRule, scope: default},
         { type: AnyWordRule, scope: method }]
       },
-      {type: CompositeRule, sub_rules: [
-        { type: MatchLineStartRule, scope: default},
-        { type: ZeroOrMoreSpacesRule, scope: default},
-        { type: SequenceRule, scope: keyword, sequence: 'label'},
-        { type: OneOrMoreSpacesRule, scope: default},
-        { type: AnyWordRule, scope: label }]
-      },
-      {type: CompositeRule, sub_rules: [
-        { type: MatchLineStartRule, scope: default},
-        { type: ZeroOrMoreSpacesRule, scope: default},
-        { type: SequenceRule, scope: keyword, sequence: 'menu'},
-        { type: OneOrMoreSpacesRule, scope: default},
-        { type: AnyWordRule, scope: menu }]
-      },
-      {type: CompositeRule, sub_rules: [
-        { type: MatchLineStartRule, scope: default},
-        { type: ZeroOrMoreSpacesRule, scope: default},
-        { type: SequenceRule, scope: keyword, sequence: 'screen'},
-        { type: OneOrMoreSpacesRule, scope: default},
-        { type: AnyWordRule, scope: screen }]
-      },
+#       {type: CompositeRule, sub_rules: [
+#         { type: MatchLineStartRule, scope: default},
+#         { type: SequenceRule, scope: keyword, sequence: 'label'},
+#         { type: OneOrMoreSpacesRule, scope: default},
+#         { type: AnyWordRule, scope: label }]
+#       },
+#       {type: CompositeRule, sub_rules: [
+#         { type: MatchLineStartRule, scope: default},
+#         { type: ZeroOrMoreSpacesRule, scope: default},
+#         { type: SequenceRule, scope: keyword, sequence: 'menu'},
+#         { type: OneOrMoreSpacesRule, scope: default},
+#         { type: AnyWordRule, scope: menu }]
+#       },
       {type: CompositeRule, sub_rules: [
         { type: MatchLineStartRule, scope: default},
         { type: ZeroOrMoreSpacesRule, scope: default},
@@ -83,7 +75,7 @@ scope:
         { type: ZeroOrMoreSpacesRule, scope: default},
         { type: SequenceRule, scope: keyword, sequence: 'define'},
         { type: OneOrMoreSpacesRule, scope: default},
-        { type: AnyWordRule, scope: define }]
+        { type: AnyWordRule, scope: define, additionalChars: "." }]
       },
 
       { type: NumberRule, scope: number},
@@ -96,15 +88,17 @@ name: RenPy
 outline: #Icons: LiClipseParsedItem.getImage(): class, method, comment, attribute (based on 'define')
   - {type: Scope, scope: [default, class], define: class } #scope is a list to identify sub-rule
   - {type: Scope, scope: [default, method], define: method }
-  - {type: Scope, scope: [default, label], define: label }
-  - {type: Scope, scope: [default, menu], define: menu }
-  - {type: Scope, scope: [default, screen], define: screen }
   - {type: Scope, scope: [default, transform], define: transform }
-  - {type: Scope, scope: [default, define], define: define }
+  - {type: Scope, scope: [default, define], define: attribute }
+  - {type: Regexp, scope: [default ], regexp: "\\n[ ]*(style +\\w+)", define: comment, group: 1}
+  - {type: Regexp, scope: [default ], regexp: "\\n[ ]*translate[ ]+(style +\\w+)", define: comment, group: 1}
+  - {type: Regexp, scope: [default ], regexp: "\\n[ ]*(screen +\\w+)", define: comment, group: 1}
+  - {type: Regexp, scope: [default ], regexp: "\\n[ ]*(menu +\\w+)", define: comment, group: 1}
+  - {type: Regexp, scope: [default ], regexp: "^label +\\w+", define: comment}
 
 indent: {
   type: spaces,
-  outline_scopes: [ class ],
+  outline_scopes: [ class, screen ],
   spaces_for_tabs: true,
   tab_width: 4,
 }
